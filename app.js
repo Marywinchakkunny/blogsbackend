@@ -3,6 +3,7 @@ const mongoose = require("mongoose")
 const cors = require("cors")
 const bcryptjs = require("bcryptjs")
 const { blogsmodel } = require("./models/blogs.js")
+const jwt = require("jsonwebtoken")
 
 const app = express()
 app.use(cors())
@@ -31,22 +32,53 @@ app.post("/signin", async (req, res) => {
             if (response.length > 0) {
                 let dbpassword = response[0].password
 
-                console.log(response)
-                bcryptjs.compare(input.password,dbpassword,(error,isMatch)=>{
-                    if(isMatch){
-                        res.json({"status":"success","userId":response[0]._id})
-                    }else{
-                        res.json({"status":"incorrect"})
+                console.log(dbpassword)
+                bcryptjs.compare(input.password, dbpassword, (error, isMatch) => {
+                    if (isMatch) {
+                        jwt.sign({ email: input.emailid}, "blogs-app", { expiresIn: "1d" },(error, token)=> {
+                            if(error) {
+                                res.json({ "status": "unable to create token" })
+                            }else{
+                                res.json({ "status": "success", "userId": response[0]._id, "token": token })
+                            }
+
+                        })
+
+
+                    } else {
+                        res.json({ "status": "incorrect" })
                     }
-                    })
+                })
             } else {
                 res.json({ "status": "user doest not exist" })
             }
+
         }
     ).catch()
 
 })
 
+app.post("/view",(req,res)=>{
+    let token =req.headers["token"]
+    jwt.verify(token,"blogs-app",(error,decoded)=>{
+        if (error){
+            res.json({"status":"Unauthorised access"})
+        }else{
+            if(decoded){
+                blogsmodel.find().then(
+                  (response)=>{
+                    res.json(response)
+                  }  
+                ).catch()
+            }
+        }
+    })
+    blogsmodel.find().then(
+        (response)=>{
+            res.json(response)
+        }
+    )
+})
 
 
 app.listen(8081, () => {
