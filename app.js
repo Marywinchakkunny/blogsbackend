@@ -7,7 +7,7 @@ const {blogsmodel}=require("./models/blogs.js")
 const app=express()
 app.use(cors())
 app.use(express.json())
- 
+mongoose.connect("mongodb+srv://marywinchakkunny:marywinchakkunny2001@cluster0.nuf6v.mongodb.net/blogsdb?retryWrites=true&w=majority&appName=Cluster0")
 
 const generateHashedPassword =async(password)=>{
     const Salt = await bcryptjs.genSalt(10)
