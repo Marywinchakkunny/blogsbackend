@@ -57,6 +57,7 @@ app.post("/signin", async (req, res) => {
     ).catch()
 
 })
+
 app.post("/view",(req,res)=>{
     let token =req.headers["token"]
     jwt.verify(token,"blogs-app",(error,decoded)=>{
